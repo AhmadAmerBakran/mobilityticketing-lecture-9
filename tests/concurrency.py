@@ -70,12 +70,12 @@ def wait_for(name):
     with connect("observer") as conn:
         for _ in range(300):
             row = conn.execute("""
-                SELECT wait_event_type
+                SELECT wait_event_type, wait_event
                 FROM pg_stat_activity
                 WHERE application_name = %s AND state = 'active'
             """, (name,)).fetchone()
             if row and row[0] == "Lock":
-                return "Lock"
+                return f"Lock/{row[1]}"
             time.sleep(0.025)
     raise AssertionError(f"{name} did not reach a PostgreSQL lock wait")
 
@@ -404,7 +404,7 @@ def main():
     load("07-idempotent.sql")
     unsafe("READ COMMITTED")
     unsafe("READ COMMITTED", increment=True)
-    for variant in ["02-conditional.sql", "03-row-lock.sql", "04-table-lock.sql", "05-advisory-lock.sql"]:
+    for variant in ["02-conditional.sql", "03-row-lock.sql", "04-table-lock.sql", "05-advisory-lock.sql", "06-optimistic.sql"]:
         for commit_a in (True, False):
             competing(variant, commit_a)
         competing(variant, True, same_trip=False)
