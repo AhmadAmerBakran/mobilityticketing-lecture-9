@@ -1,0 +1,20 @@
+name: mobility-lecture09
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: mobility_l09
+      POSTGRES_USER: mobility
+      POSTGRES_PASSWORD: mobility
+    volumes:
+      - data:/var/lib/postgresql/data
+      - .:/lab:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mobility -d mobility_l09"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  data:
