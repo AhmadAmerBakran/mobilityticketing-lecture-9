@@ -1,0 +1,21 @@
+name: Booking tests
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  postgres:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "psycopg[binary]>=3.2,<4"
+      - run: docker compose -f compose.yaml -f tests/compose.test.yaml up -d --wait postgres
+      - run: docker compose -f compose.yaml -f tests/compose.test.yaml exec -T postgres bash /lab/run.sh reset
+      - run: docker compose -f compose.yaml -f tests/compose.test.yaml exec -T postgres bash /lab/run.sh check
+      - run: python tests/concurrency.py
+      - if: always()
+        run: docker compose -f compose.yaml -f tests/compose.test.yaml down -v
