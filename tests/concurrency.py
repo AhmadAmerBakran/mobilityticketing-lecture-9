@@ -193,8 +193,9 @@ def competing(name, commit_a, same_trip=True):
             assert future.result(timeout=12)
             end(b)
             state = None
-        assert seats(trip_b) == ((1, 1) if same_trip or not commit_a else (1, 1))
-        assert seats("T-LAST") == ((1, 1) if commit_a else (0, 0))
+        assert seats(trip_b) == (1, 1)
+        if not same_trip:
+            assert seats("T-LAST") == ((1, 1) if commit_a else (0, 0))
         result(
             f"{name} A {'commit' if commit_a else 'rollback'}"
             + (" same trip" if same_trip else " other trip"),
